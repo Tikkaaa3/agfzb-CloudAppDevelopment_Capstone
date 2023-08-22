@@ -9,12 +9,26 @@ from django.contrib import messages
 from datetime import datetime
 import logging
 import json
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import AnonymousUser
+import requests
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 
 
 # Create your views here.
+
+
+def post_request(url, data, **kwargs):
+    try:
+        response = requests.post(url, json=data, **kwargs)
+        response.raise_for_status()
+        json_data = response.json()
+        return json_data
+    except requests.exceptions.RequestException as e:
+        print("Network exception occurred:", e)
+        return None
 
 
 # Create an `about` view to render a static about page
@@ -119,6 +133,25 @@ def get_dealer_details(request, dealer_id):
     return HttpResponse(dealer_id)
 
 # Create a `add_review` view to submit a review
+@login_required
 def add_review(request, dealer_id):
-    pass
+    # Check if the user is authenticated
+    if isinstance(request.user, AnonymousUser):
+        # User is not logged in
+        print("User is not logged in")
+    else:
+        # User is logged in
+        print("User `{}` is logged in".format(request.user.username))
+        review = dict()
+        json_payload = {}
+        review["time"] = datetime.utcnow().isoformat()
+        review["name"] = "John Doe",
+        review["dealership"]= "IDK",
+        review["review"] = "Great service!",
+        review["rating"] = 5,
+        review["purchase"]= True
+        json_payload["review"] = review
+        return post_request("https://us-south.functions.appdomain.cloud/api/v1/web/c3c70517-a64e-4389-a494-a4730bd3a2c8/dealership-package/post-review", json_payload, dealerId=dealer_id)
+            
+
 
