@@ -98,15 +98,20 @@ def registration_request(request):
 
 # Update the `get_dealerships` view to render the index page with a list of dealerships
 def get_dealerships(request):
+    context={}
     if request.method == "GET":
-        url = "https://us-south.functions.appdomain.cloud/api/v1/web/c3c70517-a64e-4389-a494-a4730bd3a2c8/dealership-package/get-dealership"
+        url = "https://us-south.functions.appdomain.cloud/api/v1/web/c3c70517-a64e-4389-a494-a4730bd3a2c8/dealership-package/get-dealership.json"
         
         # Get dealers from the URL
         dealerships = get_dealers_from_cf(url)
         # Concat all dealer's short name
-        dealer_names = ' '.join([dealer.short_name for dealer in dealerships])
+        dealer_names = [dealer.full_name for dealer in dealerships]
+
+        context['dealer_names'] = enumerate(dealer_names)
         # Return a list of dealer short name
-        return HttpResponse(dealer_names)
+        return render(request, 'djangoapp/index.html', context)  #HttpResponse(dealer_names)
+    
+    #return render(request, 'index.html', {}) 
 
 
 # Create a `get_dealer_details` view to render the reviews of a dealer

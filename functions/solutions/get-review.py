@@ -17,14 +17,19 @@ def main(param_dict):
     Returns:
         _type_: _description_ TODO
     """
-
+   
     try:
         client = Cloudant.iam(
             account_name=param_dict["COUCH_USERNAME"],
             api_key=param_dict["IAM_API_KEY"],
             connect=True,
-        )
+        ) 
+        db_name = "reviews"
+        db = client[db_name]
         print(f"Databases: {client.all_dbs()}")
+        reviews = []
+        for document in db:
+            reviews.append(document)
     except CloudantException as cloudant_exception:
         print("unable to connect")
         return {"error": cloudant_exception}
@@ -32,4 +37,4 @@ def main(param_dict):
         print("connection error")
         return {"error": err}
 
-    return {"dbs": client.all_dbs()}
+    return {"reviews": reviews}
