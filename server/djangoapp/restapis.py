@@ -3,13 +3,23 @@ import json
 from .models import CarDealer
 from requests.auth import HTTPBasicAuth
 
+
+def analyze_review_sentiments(url,dealerreview,**kwargs):
+    params = dict()
+    params["text"] = kwargs["text"]
+    params["version"] = kwargs["version"]
+    params["features"] = kwargs["features"]
+    params["return_analyzed_text"] = kwargs["return_analyzed_text"]
+    response = requests.get(url, params=params, headers={'Content-Type': 'application/json'},
+                                    auth=HTTPBasicAuth('apikey', "HHGuPUmQmqb8TldASzYR1FRKzGLB_oqV_pFtRfr_b9ND"))
+
 def get_request(url, **kwargs):
     print(kwargs)
     print("GET from {} ".format(url))
     try:
         # Call get method of requests library with URL and parameters
         response = requests.get(url, headers={'Content-Type': 'application/json'},
-                                    params=kwargs)
+                                    params=kwargs, auth=HTTPBasicAuth('apikey', "HHGuPUmQmqb8TldASzYR1FRKzGLB_oqV_pFtRfr_b9ND"))
         print("Network exception occurred2",response)
         
     except:
