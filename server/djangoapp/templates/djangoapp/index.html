@@ -14,7 +14,13 @@
 </head>
 
     <body>
-    <!-- Remove this line the first time you edit this file -->
+        <script>
+            $(function() {
+              $('#table').bootstrapTable()
+            })
+          </script>
+        
+
     <center><h1>Tikkaaa3 Car DealerShip Website</h1></center>
     <p></p>
     <!--Add a nav bar here -->
@@ -50,18 +56,27 @@
     <!--Add a dealer table here -->
 
     <h1>Dealerships</h1>
-    <table class="table table-hover table-bordered">
+    <table class="table" id="table" data-filter-control="true">
+        
         <thead>
             <tr>
                 <th scope="col">ID</th>
                 <th scope="col">Dealer Name</th>
+                <th scope="col">City</th>
+                <th scope="col">Address</th>
+                <th scope="col">Zip</th>
+                <th data-field="state" data-filter-control="select">State</th>
             </tr>
         </thead>
         <tbody>
-          {% for a,dealer in dealer_names %}
+          {% for dealer in dealerships %}
           <tr>
-              <td scope="row">{{ a }}</td>
-              <td scope="row">{{ dealer }}</td>
+              <td scope="row">{{ dealer.id }}</td>
+              <td><a href="{% url 'djangoapp:dealer_details' dealer.id %}">{{dealer.full_name}}</a></td>
+              <td scope="row">{{ dealer.city }}</td>
+              <td scope="row">{{ dealer.address }}</td>
+              <td scope="row">{{ dealer.zip }}</td>
+              <td scope="row">{{ dealer.state }}</td>
           </tr>
       {% endfor %}
         </tbody>

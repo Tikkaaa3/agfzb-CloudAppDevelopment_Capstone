@@ -40,7 +40,8 @@ def get_request(url, **kwargs):
     json_data = json.loads(response.text)
     return json_data
 
-def get_dealers_from_cf(url, nlu_url, **kwargs):
+def get_dealers_from_cf(url, **kwargs):
+    
     results = []
     json_result = get_request(url)
     
@@ -50,15 +51,34 @@ def get_dealers_from_cf(url, nlu_url, **kwargs):
         for dealer in dealers:
             dealer_doc = dealer["doc"]
             
+            # Check if "review" key is present in the dealer_doc dictionary
+            if "review" in dealer_doc:
+                dealer_review = dealer_doc["review"]
+            else:
+                dealer_review = ""
             
-            dealer_obj = CarDealer(address=dealer_doc["address"], city=dealer_doc["city"], full_name=dealer_doc["full_name"],
-                                   id=dealer_doc["id"], lat=dealer_doc["lat"], long=dealer_doc["long"],
-                                   short_name=dealer_doc["short_name"],
-                                   st=dealer_doc["st"], zip=dealer_doc["zip"], state=dealer_doc["state"])
+            dealer_obj = CarDealer(
+                address=dealer_doc["address"],
+                city=dealer_doc["city"],
+                full_name=dealer_doc["full_name"],
+                id=dealer_doc["id"],
+                lat=dealer_doc["lat"],
+                long=dealer_doc["long"],
+                short_name=dealer_doc["short_name"],
+                st=dealer_doc["st"],
+                zip=dealer_doc["zip"],
+                state=dealer_doc["state"]
+            )
             
             # Perform sentiment analysis on dealer review
-            sentiment = analyze_review_sentiments("https://api.au-syd.natural-language-understanding.watson.cloud.ibm.com/instances/07c744d3-6940-46c5-a04e-a787b4518fef", dealerreview=dealer_obj, text=dealer_doc["review_text"], version="2021-03-25",
-                                                  features="sentiment", return_analyzed_text=True)
+            sentiment = analyze_review_sentiments(
+                "https://api.au-syd.natural-language-understanding.watson.cloud.ibm.com/instances/07c744d3-6940-46c5-a04e-a787b4518fef",
+                dealerreview=dealer_obj,
+                text=dealer_review,
+                version="2021-03-25",
+                features="sentiment",
+                return_analyzed_text=True
+            )
             
             if sentiment is not None:
                 dealer_obj.sentiment = sentiment
