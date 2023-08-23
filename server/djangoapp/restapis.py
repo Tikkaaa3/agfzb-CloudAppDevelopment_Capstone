@@ -2,6 +2,7 @@ import requests
 import json
 from .models import CarDealer
 from requests.auth import HTTPBasicAuth
+from .models import DealerReview
 
 
 
@@ -40,53 +41,107 @@ def get_request(url, **kwargs):
     json_data = json.loads(response.text)
     return json_data
 
-def get_dealers_from_cf(url, **kwargs):
+# def get_dealer_reviews_from_cf(url, **kwargs):
+#     results = []
+#     json_result = get_request(url)
+#     print("jsonresult",json_result)
+#     if json_result:
+#         reviews = json_result.get("reviews")  # Access the "reviews" list
+        
+#         for review_doc in reviews:  # Iterate through the review dictionaries
+#               # Use dict.get() for reviews
+            
+#             if review_doc.get("dealership") == dealer_id:    
+#                 dealer_review_obj = DealerReview(
+#                         dealership=review_doc.get("dealership", ""),
+#                         name=review_doc.get("name", ""),
+#                         purchase=review_doc.get("purchase", ""),
+#                         review=review_doc.get("review", ""),
+#                         purchase_date=review_doc.get("purchase_date", ""),
+#                         car_make=review_doc.get("car_make", ""),
+#                         car_model=review_doc.get("car_model", ""),
+#                         car_year=review_doc.get("car_year", ""),
+#                         sentiment=0.0,  # Initialize sentiment, to be updated
+#                         id=review_doc.get("id", "")
+#                     )
+#                 results.append(dealer_review_obj)    
+#                 # Perform sentiment analysis on the review
+#                 # sentiment = analyze_review_sentiments(
+#                 #     "https://api.au-syd.natural-language-understanding.watson.cloud.ibm.com/instances/07c744d3-6940-46c5-a04e-a787b4518fef",
+#                 #     dealerreview=dealer_review_obj,
+#                 #     text=review_doc.get("review", ""),
+#                 #     version="2021-03-25",
+#                 #     features="sentiment",
+#                 #     return_analyzed_text=True
+#                 # )
+                
+#                 # if sentiment is not None:
+#                 #     dealer_review_obj.sentiment = sentiment
+                
+#                 # results.append(dealer_review_obj)
     
+#     return results
+
+def get_dealers_from_cf(url, **kwargs):
+    results = []
+    # Call get_request with a URL parameter
+    json_result = get_request(url)
+    if json_result:
+        # Get the row list in JSON as dealers
+        dealers = json_result["dbs"]["rows"]
+        # For each dealer object
+        for dealer in dealers:
+            # Get its content in `doc` object
+            dealer_doc = dealer["doc"]
+            # Create a CarDealer object with values in `doc` object
+            dealer_obj = CarDealer(address=dealer_doc["address"], city=dealer_doc["city"], full_name=dealer_doc["full_name"],
+                                   id=dealer_doc["id"], lat=dealer_doc["lat"], state=dealer_doc["state"], long=dealer_doc["long"],
+                                   short_name=dealer_doc["short_name"],
+                                   st=dealer_doc["st"], zip=dealer_doc["zip"])
+            results.append(dealer_obj)
+    return results
+
+
+def post_request(url, json_payload, **kwargs):
+    requests.post(url, params=kwargs, json=json_payload)
+
+def get_dealer_by_id(url, dealer_id):
+    # Add the dealerId parameter to the URL
+    url_with_id = f"{url}?dealerId={dealer_id}"
+    # Call get_request with the updated URL
+    json_result = get_request(url_with_id)
+    if json_result:
+        # Create a CarDealer object with the obtained JSON result
+        dealer_doc = json_result["doc"]
+        dealer_obj = CarDealer(address=dealer_doc["address"], city=dealer_doc["city"], full_name=dealer_doc["full_name"],
+                               id=dealer_doc["id"], lat=dealer_doc["lat"], long=dealer_doc["long"],
+                               short_name=dealer_doc["short_name"],
+                               st=dealer_doc["st"], zip=dealer_doc["zip"])
+        return dealer_obj
+    return None
+
+def get_dealer_reviews_from_cf(url, dealer_id, **kwargs):
     results = []
     json_result = get_request(url)
     
     if json_result:
-        dealers = json_result["dbs"]["rows"]
+        reviews = json_result.get("reviews", [])
         
-        for dealer in dealers:
-            dealer_doc = dealer["doc"]
-            
-            # Check if "review" key is present in the dealer_doc dictionary
-            if "review" in dealer_doc:
-                dealer_review = dealer_doc["review"]
-            else:
-                dealer_review = ""
-            
-            dealer_obj = CarDealer(
-                address=dealer_doc["address"],
-                city=dealer_doc["city"],
-                full_name=dealer_doc["full_name"],
-                id=dealer_doc["id"],
-                lat=dealer_doc["lat"],
-                long=dealer_doc["long"],
-                short_name=dealer_doc["short_name"],
-                st=dealer_doc["st"],
-                zip=dealer_doc["zip"],
-                state=dealer_doc["state"]
-            )
-            
-            # Perform sentiment analysis on dealer review
-            sentiment = analyze_review_sentiments(
-                "https://api.au-syd.natural-language-understanding.watson.cloud.ibm.com/instances/07c744d3-6940-46c5-a04e-a787b4518fef",
-                dealerreview=dealer_obj,
-                text=dealer_review,
-                version="2021-03-25",
-                features="sentiment",
-                return_analyzed_text=True
-            )
-            
-            if sentiment is not None:
-                dealer_obj.sentiment = sentiment
-            else:
-                dealer_obj.sentiment = 0.0 
-            
-            results.append(dealer_obj)
+        for review_doc in reviews:
+            if review_doc.get("dealership") == dealer_id:
+                dealer_review_obj = DealerReview(
+                    dealership=review_doc.get("dealership", ""),
+                    name=review_doc.get("name", ""),
+                    purchase=review_doc.get("purchase", ""),
+                    review=review_doc.get("review", ""),
+                    purchase_date=review_doc.get("purchase_date", ""),
+                    car_make=review_doc.get("car_make", ""),
+                    car_model=review_doc.get("car_model", ""),
+                    car_year=review_doc.get("car_year", ""),
+                    sentiment=0.0,
+                    id=review_doc.get("id", "")
+                )
+                
+                results.append(dealer_review_obj)
+    
     return results
-
-def post_request(url, json_payload, **kwargs):
-    requests.post(url, params=kwargs, json=json_payload)

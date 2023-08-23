@@ -3,7 +3,7 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404, render, redirect
 from .models import CarDealer, CarMake, CarModel
-from .restapis import get_dealers_from_cf, get_request
+from .restapis import get_dealers_from_cf, get_dealer_reviews_from_cf, get_request
 from django.contrib.auth import login, logout, authenticate
 from django.contrib import messages
 from datetime import datetime
@@ -130,8 +130,13 @@ def get_dealerships(request):
 # Create a `get_dealer_details` view to render the reviews of a dealer
 def get_dealer_details(request, dealer_id):
     context = {}
+    url = f"https://us-south.functions.appdomain.cloud/api/v1/web/c3c70517-a64e-4389-a494-a4730bd3a2c8/dealership-package/get-review.json"
+    reviews = get_dealer_reviews_from_cf(url, dealer_id=dealer_id)
     
-    return HttpResponse(dealer_id)
+    context['reviews'] = reviews
+    context['dealer_id'] = dealer_id
+    print("context",context)
+    return render(request, 'djangoapp/dealer_details.html', context)
 
 # Create a `add_review` view to submit a review
 @login_required
@@ -143,16 +148,20 @@ def add_review(request, dealer_id):
     else:
         # User is logged in
         print("User `{}` is logged in".format(request.user.username))
-        review = dict()
-        json_payload = {}
-        review["time"] = datetime.utcnow().isoformat()
-        review["name"] = "John Doe",
-        review["dealership"]= "IDK",
-        review["review"] = "Great service!",
-        review["rating"] = 5,
-        review["purchase"]= True
-        json_payload["review"] = review
-        return post_request("https://us-south.functions.appdomain.cloud/api/v1/web/c3c70517-a64e-4389-a494-a4730bd3a2c8/dealership-package/post-review", json_payload, dealerId=dealer_id)
+        if request.method == 'GET':
+        # Handle the GET request logic here
+            return render(request, 'djangoapp/add_review.html')
+        else:
+            review = dict()
+            json_payload = {}
+            review["time"] = datetime.utcnow().isoformat()
+            review["name"] = "John Doe",
+            review["dealership"]= "IDK",
+            review["review"] = "Great service!",
+            review["rating"] = 5,
+            review["purchase"]= True
+            json_payload["review"] = review
+            return post_request("https://us-south.functions.appdomain.cloud/api/v1/web/c3c70517-a64e-4389-a494-a4730bd3a2c8/dealership-package/post-review", json_payload, dealerId=dealer_id)
             
 
 
