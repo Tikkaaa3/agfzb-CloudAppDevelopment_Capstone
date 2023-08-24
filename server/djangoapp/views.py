@@ -131,8 +131,10 @@ def get_dealerships(request):
 def get_dealer_details(request, dealer_id):
     context = {}
     url = f"https://us-south.functions.appdomain.cloud/api/v1/web/c3c70517-a64e-4389-a494-a4730bd3a2c8/dealership-package/get-review.json"
+    url2 = "https://us-south.functions.appdomain.cloud/api/v1/web/c3c70517-a64e-4389-a494-a4730bd3a2c8/dealership-package/get-dealership.json"
     reviews = get_dealer_reviews_from_cf(url, dealer_id=dealer_id)
-    
+    dealerships = get_dealers_from_cf(url=url2)
+    context['dealerships'] = dealerships
     context['reviews'] = reviews
     context['dealer_id'] = dealer_id
     print("context",context)
@@ -149,8 +151,15 @@ def add_review(request, dealer_id):
         # User is logged in
         print("User `{}` is logged in".format(request.user.username))
         if request.method == 'GET':
-        # Handle the GET request logic here
-            return render(request, 'djangoapp/add_review.html')
+            url = f"https://us-south.functions.appdomain.cloud/api/v1/web/c3c70517-a64e-4389-a494-a4730bd3a2c8/dealership-package/get-review.json"
+            url2 = "https://us-south.functions.appdomain.cloud/api/v1/web/c3c70517-a64e-4389-a494-a4730bd3a2c8/dealership-package/get-dealership.json"
+            context={}
+            reviews = get_dealer_reviews_from_cf(url, dealer_id=dealer_id)
+            dealerships = get_dealers_from_cf(url=url2)
+            context['dealerships'] = dealerships
+            context['reviews'] = reviews
+            context['dealer_id'] = dealer_id
+            return render(request, 'djangoapp/add_review.html',context)
         else:
             review = dict()
             json_payload = {}

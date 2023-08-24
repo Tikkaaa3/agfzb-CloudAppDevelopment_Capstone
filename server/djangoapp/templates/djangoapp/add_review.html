@@ -11,7 +11,54 @@
 
 </head>
     <body>
-    <!--Add review form here -->
-    <p>Hellooo</p>
+
+        {% for dealer in dealerships %}
+            {% if dealer.id == dealer_id %}
+                <h3>Add Review About <strong>{{ dealer.full_name }}</strong> </h3>
+            
+        <div class="container mt-4">
+            <div class="card" style="height: 400px;">
+                <div class="card-body">
+                    <form action="">
+                        <h6 class="card-title"><strong>Enter The Review Content:</strong></h6>
+                        <textarea class="form-control form-control-sm mb-2" id="content" name="content" rows="5" required></textarea>
+                        
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="purchasecheck" id="purchasecheck">
+                            <label class="form-check-label" for="purchasecheck">Has Purchased The Car From {{ dealer.full_name }}?<span class="text-muted" style="color: grey;">(Select purchased car information below if checked)</span></label>
+                        </div>
+            {% endif %}
+        {% endfor %}    <div>
+                        <label><strong>Select your car (model-make-year)</strong></label>
+                        <select name="car" id="car" class="form-select form-select-sm mb-2" required>
+                            
+                                <option selected value="Forester23">Camaro - Chevrolet - 2017</option>
+                            
+                        </select>
+                        </div>
+                        <label><strong>Select Your Purchase Date:</strong></label>
+                        <div class="input-group" style="max-width: 300px">
+                            
+                            <input class="form-control form-control-sm date-own" type="text" name="purchasedate" id="purchasedate">
+                            <div class="input-group-append">
+                                
+                            </div>
+                        </div>
+                        
+                        <script type="text/javascript">
+                            $('.date-own').datepicker({
+                                format: 'mm/dd/yyyy'
+                            });
+                        </script>
+                        
+                        <button class="btn btn-sm btn-primary mt-3 px-4 py-2">Submit</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        
+        
+
     </body>
 </html>
